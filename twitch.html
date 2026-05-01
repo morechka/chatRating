@@ -16,8 +16,8 @@
     <label for="timerSec">Таймер (в секундах)</label>
     <input type="number" name="timerSec" id="timerSec" placeholder="0" value="0" min="0" max="600">
     &nbsp;&nbsp;&nbsp;
-    <label for="mode">Режим</label>
-    <select name="mode" id="mode">
+    <label for="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">Режим</label>
+    <select name="mode" id="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">
         <option value="only">Единственное число</option>
         <option value="first">Первое число</option>
     </select>
@@ -61,11 +61,6 @@
         Виджет для OBS, управляемый модераторами!
     </a>
 
-    <script>
-        // Заглушки для функций, которых нет в новой версии
-        function showModeInfo() { /* заглушка */ }
-        function hideModeInfo() { /* заглушка */ }
-    </script>
     <script src="script.js"></script>
     <script src="twitch.js"></script>
 </body>

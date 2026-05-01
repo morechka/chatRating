@@ -9,19 +9,20 @@
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
 </head>
 <body>
+
     <label for="timer">Таймер (в минутах)</label>
     <input type="number" name="timer" id="timer" placeholder="0" value="0" min="0" max="10">
     &nbsp;&nbsp;&nbsp;
     <label for="timerSec">Таймер (в секундах)</label>
     <input type="number" name="timerSec" id="timerSec" placeholder="0" value="0" min="0" max="600">
     &nbsp;&nbsp;&nbsp;
-    <label for="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">Режим</label>
-    <select name="mode" id="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">
+    <label for="mode">Режим</label>
+    <select name="mode" id="mode">
         <option value="only">Единственное число</option>
         <option value="first">Первое число</option>
     </select>
     &nbsp;&nbsp;&nbsp;
-    <button id="start-button" disabled>СТАРТ</button>
+    <button id="start-button" onclick="start()" disabled>СТАРТ</button>
 
     <br>
     <div id="channel">
@@ -35,7 +36,9 @@
             </text>
             Проголосовавших: <span id="counter">0</span>
         </p>
+        
         <div id="score"></div>
+        
     </div>
 
     <div id="mode-info">
@@ -58,7 +61,12 @@
         Виджет для OBS, управляемый модераторами!
     </a>
 
+    <script>
+        // Заглушки для функций, которых нет в новой версии
+        function showModeInfo() { /* заглушка */ }
+        function hideModeInfo() { /* заглушка */ }
+    </script>
+    <script src="script.js"></script>
     <script src="twitch.js"></script>
-    <!-- script.js больше не подключаем, всё в twitch.js -->
 </body>
 </html>

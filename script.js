@@ -66,6 +66,15 @@ function messageHandler(user, message) {
         return
     }
 
+    // ===== ПРОВЕРКА ЧЁРНОГО СПИСКА =====
+    try {
+        const raw = localStorage.getItem('chatRating_blacklist');
+        if (raw) {
+            const blacklist = JSON.parse(raw).map(item => item.nick.toLowerCase());
+            if (blacklist.includes(user.toLowerCase())) return;
+        }
+    } catch(e) {}
+    // ===================================
 
     let answer
     if(mode=="only") {

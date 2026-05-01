@@ -40,7 +40,7 @@ function start() {
     timerEl.disabled = true
     mainEl.style.visibility = "visible"
     btnEl.innerText = "СТОП"
-    btnEl.style.backgroundColor = "rgb(129, 93, 93)" // хотел без этого в коде, но так лень
+    btnEl.style.backgroundColor = "rgb(129, 93, 93)"
 
     mode = modeEl.value
 
@@ -66,15 +66,15 @@ function messageHandler(user, message) {
         return
     }
 
-    // ===== ПРОВЕРКА ЧЁРНОГО СПИСКА =====
-    try {
-        const raw = localStorage.getItem('chatRating_blacklist');
-        if (raw) {
-            const blacklist = JSON.parse(raw).map(item => item.nick.toLowerCase());
+    // ===== ПРОВЕРКА ЧЁРНОГО СПИСКА (через куки) =====
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('chatRating_blacklist='));
+    if (cookie) {
+        try {
+            const blacklist = JSON.parse(decodeURIComponent(cookie.split('=')[1])).map(item => item.nick.toLowerCase());
             if (blacklist.includes(user.toLowerCase())) return;
-        }
-    } catch(e) {}
-    // ===================================
+        } catch(e) {}
+    }
+    // =================================================
 
     let answer
     if(mode=="only") {
@@ -136,8 +136,6 @@ function stop() {
     btnEl.style.backgroundColor = "rgb(93, 129, 93)"
     infoTextEl.innerHTML = "Голосование окончено!<br><br>"
     btnEl.disabled = true 
-    // Да, нужно F5 чтобы запустить голосование заново
-    // МНе лень писать пару строчек чтобы сбрасывать таймеры, списки, текста в html и чёт там ещё
 
     if(users.length > 0) {
         let result = (score/users.length).toFixed(2)

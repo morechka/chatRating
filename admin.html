@@ -86,7 +86,6 @@
             transition: background 0.2s;
         }
         .controls button:hover { background: #3d3d48; }
-        .controls button.active { background: var(--accent); }
         .nick-list {
             list-style: none;
             max-height: 350px;
@@ -168,15 +167,22 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'chatRating_blacklist';
+        const COOKIE_KEY = 'chatRating_blacklist';
+        const COOKIE_DAYS = 365;
 
         function loadList() {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            return raw ? JSON.parse(raw) : [];
+            const cookie = document.cookie.split('; ').find(row => row.startsWith(COOKIE_KEY + '='));
+            if (cookie) {
+                try {
+                    return JSON.parse(decodeURIComponent(cookie.split('=')[1]));
+                } catch(e) { return []; }
+            }
+            return [];
         }
 
         function saveList(list) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            const value = encodeURIComponent(JSON.stringify(list));
+            document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=${COOKIE_DAYS * 24 * 60 * 60}; SameSite=Lax`;
         }
 
         function render() {
@@ -217,14 +223,6 @@
                 });
             }
             countLabel.textContent = `Ников в списке: ${list.length}`;
-            const btn = document.getElementById('toggleHiddenBtn');
-            if (list.length > 0 && list.every(item => item.hidden)) {
-                btn.textContent = '👁 Показать все';
-            } else if (list.length > 0 && list.every(item => !item.hidden)) {
-                btn.textContent = '🙈 Скрыть все';
-            } else {
-                btn.textContent = '🙈 Скрыть все';
-            }
         }
 
         function addNick(nick) {

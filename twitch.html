@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
 </head>
 <body>
-
     <label for="timer">Таймер (в минутах)</label>
     <input type="number" name="timer" id="timer" placeholder="0" value="0" min="0" max="10">
     &nbsp;&nbsp;&nbsp;
@@ -22,7 +21,7 @@
         <option value="first">Первое число</option>
     </select>
     &nbsp;&nbsp;&nbsp;
-    <button id="start-button" onclick="start()" disabled>СТАРТ</button>
+    <button id="start-button" disabled>СТАРТ</button>
 
     <br>
     <div id="channel">
@@ -59,7 +58,7 @@
         Виджет для OBS, управляемый модераторами!
     </a>
 
-    <script src="script.js"></script>
     <script src="twitch.js"></script>
+    <!-- script.js больше не подключаем, всё в twitch.js -->
 </body>
 </html>

@@ -115,46 +115,72 @@ if( !channel ) {
     ComfyJS.Init(channel)
 }
 
-// ===== ТАЙМЕР В СЕКУНДАХ =====
-let timerIntervalSec = null;
-let remainingSec = 0;
+// ===== ОБЩИЙ ТАЙМЕР (минуты + секунды) =====
+let timerInterval = null;
+let remainingMin = 0;
+let remainingSecTotal = 0;
+let timerMode = 'min'; // 'min' или 'sec' — с чего начали отсчёт
 
-function startSec() {
-    const input = parseInt(document.getElementById('timerSec').value);
-    if (isNaN(input) || input <= 0) {
-        alert('Введите количество секунд!');
+function start() {
+    const minInput = parseInt(document.getElementById('timer').value) || 0;
+    const secInput = parseInt(document.getElementById('timerSec').value) || 0;
+
+    if (minInput <= 0 && secInput <= 0) {
+        alert('Введите минуты или секунды!');
         return;
     }
-    if (timerIntervalSec) clearInterval(timerIntervalSec);
-    remainingSec = input;
-    document.getElementById('timerSec').value = remainingSec;
-    document.getElementById('start-button-sec').disabled = true;
+
+    if (timerInterval) clearInterval(timerInterval);
+
+    // Определяем режим: если секунды указаны — работаем в секундах, иначе в минутах
+    if (secInput > 0) {
+        timerMode = 'sec';
+        remainingSecTotal = secInput;
+        document.getElementById('timerSec').value = remainingSecTotal;
+    } else {
+        timerMode = 'min';
+        remainingMin = minInput;
+        document.getElementById('timer').value = remainingMin;
+    }
+
+    // Блокируем кнопку и поля
+    document.getElementById('start-button').disabled = true;
+    document.getElementById('timer').disabled = true;
     document.getElementById('timerSec').disabled = true;
 
-    timerIntervalSec = setInterval(() => {
-        remainingSec--;
-        document.getElementById('timerSec').value = remainingSec;
-        if (remainingSec <= 0) {
-            clearInterval(timerIntervalSec);
-            timerIntervalSec = null;
-            document.getElementById('start-button-sec').disabled = false;
-            document.getElementById('timerSec').disabled = false;
-            document.getElementById('timerSec').value = '0';
-            alert('Время вышло!');
+    timerInterval = setInterval(() => {
+        if (timerMode === 'sec') {
+            remainingSecTotal--;
+            document.getElementById('timerSec').value = remainingSecTotal;
+            if (remainingSecTotal <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                resetTimerUI();
+                alert('Время вышло!');
+            }
+        } else {
+            remainingMin--;
+            document.getElementById('timer').value = remainingMin;
+            if (remainingMin <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                resetTimerUI();
+                alert('Время вышло!');
+            }
         }
-    }, 1000);
+    }, timerMode === 'sec' ? 1000 : 60000);
 }
 
-// Разблокируем кнопку при подключении к чату (оригинал трогать не буду, но добавлю свою)
-ComfyJS.onConnected = () => {
-    if (document.getElementById('start-button')) {
-        document.getElementById('start-button').disabled = false;
-    }
-    if (document.getElementById('start-button-sec')) {
-        document.getElementById('start-button-sec').disabled = false;
-    }
-};
-// ==============================
+function resetTimerUI() {
+    document.getElementById('start-button').disabled = false;
+    document.getElementById('timer').disabled = false;
+    document.getElementById('timerSec').disabled = false;
+    document.getElementById('timer').value = '0';
+    document.getElementById('timerSec').value = '0';
+    remainingMin = 0;
+    remainingSecTotal = 0;
+}
+// ===========================================
 
 function loop() {
     ctx.clearRect(0, 0, width, height);

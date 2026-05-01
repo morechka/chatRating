@@ -10,17 +10,11 @@
 </head>
 <body>
 
-    <!-- Таймер в минутах (оригинал, не трогаю) -->
     <label for="timer">Таймер (в минутах)</label>
     <input type="number" name="timer" id="timer" placeholder="0" value="0" min="0" max="10">
     &nbsp;&nbsp;&nbsp;
-
-    <!-- Таймер в секундах (новый) -->
     <label for="timerSec">Таймер (в секундах)</label>
     <input type="number" name="timerSec" id="timerSec" placeholder="0" value="0" min="0" max="600">
-    &nbsp;&nbsp;&nbsp;
-    <button id="start-button-sec" onclick="startSec()" disabled>СТАРТ (сек)</button>
-
     &nbsp;&nbsp;&nbsp;
     <label for="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">Режим</label>
     <select name="mode" id="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">

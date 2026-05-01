@@ -10,8 +10,17 @@
 </head>
 <body>
 
+    <!-- Таймер в минутах (оригинал, не трогаю) -->
     <label for="timer">Таймер (в минутах)</label>
     <input type="number" name="timer" id="timer" placeholder="0" value="0" min="0" max="10">
+    &nbsp;&nbsp;&nbsp;
+
+    <!-- Таймер в секундах (новый) -->
+    <label for="timerSec">Таймер (в секундах)</label>
+    <input type="number" name="timerSec" id="timerSec" placeholder="0" value="0" min="0" max="600">
+    &nbsp;&nbsp;&nbsp;
+    <button id="start-button-sec" onclick="startSec()" disabled>СТАРТ (сек)</button>
+
     &nbsp;&nbsp;&nbsp;
     <label for="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">Режим</label>
     <select name="mode" id="mode" onmouseover="showModeInfo()" onmouseleave="hideModeInfo()">
@@ -24,8 +33,6 @@
     <br>
     <div id="channel">
         НЕ УКАЗАН TWITCH КАНАЛ (в текущей ссылке добавить ?channel=СЮДА)
-
-        
     </div>
     <div id="main">
         <p id="info">
@@ -35,9 +42,7 @@
             </text>
             Проголосовавших: <span id="counter">0</span>
         </p>
-        
         <div id="score"></div>
-        
     </div>
 
     <div id="mode-info">
@@ -56,12 +61,11 @@
         <img src="firstMode.png">
     </div>
 
-   	<a id="obs-widget" href="https://github.com/declider/chatRating/tree/main/widget"target="_blank">
-		Виджет для OBS, управляемый модераторами!
-	</a>
+    <a id="obs-widget" href="https://github.com/declider/chatRating/tree/main/widget" target="_blank">
+        Виджет для OBS, управляемый модераторами!
+    </a>
 
     <script src="script.js"></script>
     <script src="twitch.js"></script>
 </body>
 </html>
-

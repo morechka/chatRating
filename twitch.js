@@ -101,7 +101,7 @@ function messageHandler(user, message) {
 ComfyJS.onChat = ( user, message, flags, self, extra ) => {
     // ===== ПРОВЕРКА ЧЁРНОГО СПИСКА =====
     if (getBlacklistedNicks().includes(user.toLowerCase())) {
-        return; // Игнорируем сообщение от пользователя из чёрного списка
+        return;
     }
     // ===================================
     
@@ -114,6 +114,47 @@ if( !channel ) {
 } else {
     ComfyJS.Init(channel)
 }
+
+// ===== ТАЙМЕР В СЕКУНДАХ =====
+let timerIntervalSec = null;
+let remainingSec = 0;
+
+function startSec() {
+    const input = parseInt(document.getElementById('timerSec').value);
+    if (isNaN(input) || input <= 0) {
+        alert('Введите количество секунд!');
+        return;
+    }
+    if (timerIntervalSec) clearInterval(timerIntervalSec);
+    remainingSec = input;
+    document.getElementById('timerSec').value = remainingSec;
+    document.getElementById('start-button-sec').disabled = true;
+    document.getElementById('timerSec').disabled = true;
+
+    timerIntervalSec = setInterval(() => {
+        remainingSec--;
+        document.getElementById('timerSec').value = remainingSec;
+        if (remainingSec <= 0) {
+            clearInterval(timerIntervalSec);
+            timerIntervalSec = null;
+            document.getElementById('start-button-sec').disabled = false;
+            document.getElementById('timerSec').disabled = false;
+            document.getElementById('timerSec').value = '0';
+            alert('Время вышло!');
+        }
+    }, 1000);
+}
+
+// Разблокируем кнопку при подключении к чату (оригинал трогать не буду, но добавлю свою)
+ComfyJS.onConnected = () => {
+    if (document.getElementById('start-button')) {
+        document.getElementById('start-button').disabled = false;
+    }
+    if (document.getElementById('start-button-sec')) {
+        document.getElementById('start-button-sec').disabled = false;
+    }
+};
+// ==============================
 
 function loop() {
     ctx.clearRect(0, 0, width, height);

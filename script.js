@@ -57,6 +57,20 @@ function start() {
 }
 
 
+// ===== ЧЁРНЫЙ СПИСОК =====
+function isBlacklisted(user) {
+    try {
+        const cookie = document.cookie.split('; ').find(row => row.startsWith('chatRating_blacklist='));
+        if (cookie) {
+            const list = JSON.parse(decodeURIComponent(cookie.split('=')[1]));
+            return list.some(item => item.nick.toLowerCase() === user.toLowerCase());
+        }
+    } catch(e) {}
+    return false;
+}
+// =========================
+
+
 function messageHandler(user, message) {
     if(!started) {
         return
@@ -65,6 +79,9 @@ function messageHandler(user, message) {
     if(users.includes(user)) {
         return
     }
+
+    // Проверка чёрного списка
+    if (isBlacklisted(user)) return;
 
     let answer
     if(mode=="only") {
@@ -189,4 +206,17 @@ function showNewScore(user, answer, color) {
     setTimeout(() => {
         document.body.removeChild(el)
     }, 1000)
+}
+
+
+// ===== ПОДКЛЮЧЕНИЕ К TWITCH =====
+ComfyJS.onChat = ( user, message, flags, self, extra ) => {
+    message = message.replace("  "," ").replace(/[\uD800-\uDFFF]/gi, []).trim()
+    messageHandler(user, message)
+}
+
+if( !channel ) {
+    alert("НЕ УКАЗАН ТВИЧ КАНАЛ (в ссылке добавить ?channel=КАНАЛ)")
+} else {
+    ComfyJS.Init(channel)
 }

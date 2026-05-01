@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чёрный список оценок</title>
+    <style>
+        :root {
+            --bg: #0e0e10;
+            --card: #18181b;
+            --accent: #e94560;
+            --text: #efeff1;
+            --input-bg: #1f1f23;
+            --btn-bg: #2d2d35;
+            --hidden-nick: #555;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: var(--card);
+            padding: 30px 25px;
+            border-radius: 16px;
+            width: 440px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+        }
+        h1 span { color: var(--accent); }
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            outline: 2px solid transparent;
+            transition: outline 0.2s;
+        }
+        .input-row input:focus {
+            outline: 2px solid var(--accent);
+        }
+        .input-row button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .input-row button:hover { background: #c12e4a; }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .controls button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            background: var(--btn-bg);
+            color: #ddd;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .controls button:hover { background: #3d3d48; }
+        .controls button.active { background: var(--accent); }
+        .nick-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .nick-list::-webkit-scrollbar { width: 5px; }
+        .nick-list::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .nick-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background: var(--input-bg);
+            border-radius: 8px;
+            transition: color 0.3s;
+        }
+        .nick-item.hidden-nick {
+            color: var(--hidden-nick);
+            font-style: italic;
+        }
+        .nick-item .nick-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .nick-item .actions {
+            display: flex;
+            gap: 6px;
+            margin-left: 10px;
+        }
+        .nick-item .actions button {
+            background: none;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 3px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .nick-item .actions button:hover {
+            background: #333;
+            color: #fff;
+        }
+        .nick-item .actions button.delete-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .empty-msg {
+            text-align: center;
+            color: #666;
+            padding: 30px 0;
+        }
+        .count {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚫 Чёрный <span>список</span></h1>
+        <div class="input-row">
+            <input type="text" id="nickInput" placeholder="Введите ник..." autocomplete="off">
+            <button id="addBtn">Добавить</button>
+        </div>
+        <div class="controls">
+            <button id="toggleHiddenBtn">🙈 Скрыть все</button>
+            <button id="clearAllBtn">🗑 Очистить всё</button>
+        </div>
+        <p class="count" id="countLabel">Ников в списке: 0</p>
+        <ul class="nick-list" id="nickList"></ul>
+        <p class="empty-msg" id="emptyMsg">Список пуст</p>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'chatRating_blacklist';
+
+        function loadList() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        }
+
+        function saveList(list) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        }
+
+        function render() {
+            const list = loadList();
+            const nickListEl = document.getElementById('nickList');
+            const emptyMsg = document.getElementById('emptyMsg');
+            const countLabel = document.getElementById('countLabel');
+            nickListEl.innerHTML = '';
+            if (list.length === 0) {
+                emptyMsg.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'none';
+                list.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'nick-item' + (item.hidden ? ' hidden-nick' : '');
+                    const nickSpan = document.createElement('span');
+                    nickSpan.className = 'nick-text';
+                    nickSpan.textContent = item.hidden ? '••• скрыт •••' : item.nick;
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'actions';
+
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.textContent = item.hidden ? '👁' : '🙈';
+                    toggleBtn.title = item.hidden ? 'Показать' : 'Скрыть';
+                    toggleBtn.addEventListener('click', () => toggleHidden(index));
+
+                    const delBtn = document.createElement('button');
+                    delBtn.textContent = '✕';
+                    delBtn.className = 'delete-btn';
+                    delBtn.title = 'Удалить';
+                    delBtn.addEventListener('click', () => removeNick(index));
+
+                    actionsDiv.appendChild(toggleBtn);
+                    actionsDiv.appendChild(delBtn);
+                    li.appendChild(nickSpan);
+                    li.appendChild(actionsDiv);
+                    nickListEl.appendChild(li);
+                });
+            }
+            countLabel.textContent = `Ников в списке: ${list.length}`;
+            const btn = document.getElementById('toggleHiddenBtn');
+            if (list.length > 0 && list.every(item => item.hidden)) {
+                btn.textContent = '👁 Показать все';
+            } else if (list.length > 0 && list.every(item => !item.hidden)) {
+                btn.textContent = '🙈 Скрыть все';
+            } else {
+                btn.textContent = '🙈 Скрыть все';
+            }
+        }
+
+        function addNick(nick) {
+            const trimmed = nick.trim();
+            if (!trimmed) return;
+            const list = loadList();
+            if (list.some(item => item.nick.toLowerCase() === trimmed.toLowerCase())) {
+                alert(`Ник "${trimmed}" уже в списке.`);
+                return;
+            }
+            list.push({ nick: trimmed, hidden: false });
+            saveList(list);
+            document.getElementById('nickInput').value = '';
+            render();
+        }
+
+        function removeNick(index) { const list = loadList(); list.splice(index, 1); saveList(list); render(); }
+        function toggleHidden(index) { const list = loadList(); list[index].hidden = !list[index].hidden; saveList(list); render(); }
+        function toggleAllHidden() {
+            const list = loadList();
+            if (list.length === 0) return;
+            const allHidden = list.every(item => item.hidden);
+            list.forEach(item => { item.hidden = !allHidden; });
+            saveList(list);
+            render();
+        }
+        function clearAll() { if (!confirm('Удалить всех?')) return; saveList([]); render(); }
+
+        document.getElementById('addBtn').addEventListener('click', () => addNick(document.getElementById('nickInput').value));
+        document.getElementById('nickInput').addEventListener('keydown', e => { if (e.key === 'Enter') addNick(e.target.value); });
+        document.getElementById('toggleHiddenBtn').addEventListener('click', toggleAllHidden);
+        document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+        render();
+    </script>
+</body>
+</html>

@@ -66,16 +66,6 @@ function messageHandler(user, message) {
         return
     }
 
-    // ===== ПРОВЕРКА ЧЁРНОГО СПИСКА (через куки) =====
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('chatRating_blacklist='));
-    if (cookie) {
-        try {
-            const blacklist = JSON.parse(decodeURIComponent(cookie.split('=')[1])).map(item => item.nick.toLowerCase());
-            if (blacklist.includes(user.toLowerCase())) return;
-        } catch(e) {}
-    }
-    // =================================================
-
     let answer
     if(mode=="only") {
         answer = message.trim().replace(",",".")
@@ -86,9 +76,6 @@ function messageHandler(user, message) {
     if(isNaN(answer)) {
         return
     }
-
-    
-    
 
     answer = parseFloat(answer)
 

@@ -115,72 +115,55 @@ if( !channel ) {
     ComfyJS.Init(channel)
 }
 
-// ===== ОБЩИЙ ТАЙМЕР (минуты + секунды) =====
-let timerInterval = null;
-let remainingMin = 0;
-let remainingSecTotal = 0;
-let timerMode = 'min'; // 'min' или 'sec' — с чего начали отсчёт
+// ===== ТАЙМЕР (секунды) =====
+let timerIntervalSec = null;
+let remainingSeconds = 0;
 
-function start() {
-    const minInput = parseInt(document.getElementById('timer').value) || 0;
-    const secInput = parseInt(document.getElementById('timerSec').value) || 0;
-
-    if (minInput <= 0 && secInput <= 0) {
-        alert('Введите минуты или секунды!');
+function startSec() {
+    const secInput = parseInt(document.getElementById('timerSec').value);
+    if (isNaN(secInput) || secInput <= 0) {
+        alert('Введите количество секунд!');
         return;
     }
 
-    if (timerInterval) clearInterval(timerInterval);
+    // Останавливаем предыдущий таймер если был
+    if (timerIntervalSec) clearInterval(timerIntervalSec);
 
-    // Определяем режим: если секунды указаны — работаем в секундах, иначе в минутах
-    if (secInput > 0) {
-        timerMode = 'sec';
-        remainingSecTotal = secInput;
-        document.getElementById('timerSec').value = remainingSecTotal;
-    } else {
-        timerMode = 'min';
-        remainingMin = minInput;
-        document.getElementById('timer').value = remainingMin;
-    }
-
-    // Блокируем кнопку и поля
+    remainingSeconds = secInput;
+    document.getElementById('timerSec').value = remainingSeconds;
     document.getElementById('start-button').disabled = true;
     document.getElementById('timer').disabled = true;
     document.getElementById('timerSec').disabled = true;
 
-    timerInterval = setInterval(() => {
-        if (timerMode === 'sec') {
-            remainingSecTotal--;
-            document.getElementById('timerSec').value = remainingSecTotal;
-            if (remainingSecTotal <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                resetTimerUI();
-                alert('Время вышло!');
-            }
-        } else {
-            remainingMin--;
-            document.getElementById('timer').value = remainingMin;
-            if (remainingMin <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                resetTimerUI();
-                alert('Время вышло!');
-            }
+    timerIntervalSec = setInterval(() => {
+        remainingSeconds--;
+        document.getElementById('timerSec').value = remainingSeconds;
+
+        if (remainingSeconds <= 0) {
+            clearInterval(timerIntervalSec);
+            timerIntervalSec = null;
+            document.getElementById('start-button').disabled = false;
+            document.getElementById('timer').disabled = false;
+            document.getElementById('timerSec').disabled = false;
+            document.getElementById('timerSec').value = '0';
+            alert('Время вышло!');
         }
-    }, timerMode === 'sec' ? 1000 : 60000);
+    }, 1000);
 }
 
-function resetTimerUI() {
-    document.getElementById('start-button').disabled = false;
-    document.getElementById('timer').disabled = false;
-    document.getElementById('timerSec').disabled = false;
-    document.getElementById('timer').value = '0';
-    document.getElementById('timerSec').value = '0';
-    remainingMin = 0;
-    remainingSecTotal = 0;
-}
-// ===========================================
+// Переопределяем функцию start(), чтобы она вызывала оригинал и секундный таймер
+const originalStart = window.start;
+window.start = function() {
+    const secInput = parseInt(document.getElementById('timerSec').value);
+    if (secInput > 0) {
+        startSec();
+    }
+    // Вызываем оригинальную функцию из script.js
+    if (typeof originalStart === 'function') {
+        originalStart();
+    }
+};
+// ============================
 
 function loop() {
     ctx.clearRect(0, 0, width, height);

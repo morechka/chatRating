@@ -12,74 +12,52 @@ function getBlacklistedNicks() {
 }
 // =========================
 
-// Ждём, пока script.js загрузится и создаст свои функции
+// Ждём полной загрузки script.js
 window.addEventListener('load', function() {
-    
-    // ===== ПЕРЕХВАТЫВАЕМ ComfyJS.onChat ДЛЯ ЧЁРНОГО СПИСКА =====
-    // Сохраняем оригинальный onChat, если он уже задан в script.js
-    const originalOnChat = ComfyJS.onChat;
-    
-    ComfyJS.onChat = function(user, message, flags, self, extra) {
-        // Проверка чёрного списка
-        if (getBlacklistedNicks().includes(user.toLowerCase())) {
-            console.log(`[Blacklist] Игнорируем сообщение от ${user}`);
-            return;
-        }
-        // Вызываем оригинальный обработчик из script.js
-        if (typeof originalOnChat === 'function') {
-            originalOnChat(user, message, flags, self, extra);
-        }
-    };
-    // ========================================================
 
-    // ===== ТАЙМЕР В СЕКУНДАХ =====
-    let timerIntervalSec = null;
-    let remainingSeconds = 0;
-
-    // Добавляем обработчик на кнопку СТАРТ
-    const startButton = document.getElementById('start-button');
-    const timerSecInput = document.getElementById('timerSec');
-    
-    if (startButton && timerSecInput) {
-        // Сохраняем оригинальный onclick
-        const originalClick = startButton.onclick;
-        
-        startButton.onclick = function(event) {
-            const secValue = parseInt(timerSecInput.value);
-            
-            // Если введены секунды — запускаем секундный таймер
-            if (!isNaN(secValue) && secValue > 0) {
-                if (timerIntervalSec) clearInterval(timerIntervalSec);
-                
-                remainingSeconds = secValue;
-                timerSecInput.value = remainingSeconds;
-                startButton.disabled = true;
-                document.getElementById('timer').disabled = true;
-                timerSecInput.disabled = true;
-                
-                timerIntervalSec = setInterval(function() {
-                    remainingSeconds--;
-                    timerSecInput.value = remainingSeconds;
-                    
-                    if (remainingSeconds <= 0) {
-                        clearInterval(timerIntervalSec);
-                        timerIntervalSec = null;
-                        startButton.disabled = false;
-                        document.getElementById('timer').disabled = false;
-                        timerSecInput.disabled = false;
-                        timerSecInput.value = '0';
-                        alert('Время вышло!');
-                    }
-                }, 1000);
+    // Перехватываем сообщения чата для фильтрации чёрного списка
+    ComfyJS.onChat = (function(originalOnChat) {
+        return function(user, message, flags, self, extra) {
+            if (getBlacklistedNicks().includes(user.toLowerCase())) {
+                return;
             }
-            
-            // Вызываем оригинальный обработчик (для минутного таймера)
-            if (typeof originalClick === 'function') {
-                originalClick.call(startButton, event);
+            // Вызываем оригинальный обработчик из script.js
+            if (typeof originalOnChat === 'function') {
+                originalOnChat.call(this, user, message, flags, self, extra);
             }
         };
+    })(ComfyJS.onChat);
+
+    // ===== ТАЙМЕР В СЕКУНДАХ =====
+    const startButton = document.getElementById('start-button');
+    const timerSecInput = document.getElementById('timerSec');
+    let timerIntervalSec = null;
+
+    if (startButton && timerSecInput) {
+        startButton.addEventListener('click', function(e) {
+            const secValue = parseInt(timerSecInput.value);
+            if (isNaN(secValue) || secValue <= 0) return; // нет секунд — работает только минуты
+
+            // Блокируем кнопку сразу (оригинальный script.js тоже заблокирует)
+            let remaining = secValue;
+            timerSecInput.value = remaining;
+            timerSecInput.disabled = true;
+
+            if (timerIntervalSec) clearInterval(timerIntervalSec);
+            timerIntervalSec = setInterval(function() {
+                remaining--;
+                timerSecInput.value = remaining;
+                if (remaining <= 0) {
+                    clearInterval(timerIntervalSec);
+                    timerIntervalSec = null;
+                    timerSecInput.disabled = false;
+                    timerSecInput.value = '0';
+                    startButton.disabled = false;
+                    document.getElementById('timer').disabled = false;
+                    alert('Время вышло!');
+                }
+            }, 1000);
+        });
     }
     // ============================
-
-    console.log('[chatRating] Чёрный список и таймер секунд активированы');
 });
